@@ -107,5 +107,25 @@ class CalculatorTest {
 
 
     }
+    //Erste Roter Test
+    @Test
+    @DisplayName("should handle multiple additions correctly")
+    void testMultipleAddition() {
+
+        Calculator calc = new Calculator();
+
+        calc.pressDigitKey(2);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(3);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(4);
+        calc.pressEqualsKey();
+
+        String expected ="9";
+        String actual = calc.readScreen();//7 only adds last two numbers 3 and 4
+
+        assertEquals(expected, actual);
+
+    }
 }
 
