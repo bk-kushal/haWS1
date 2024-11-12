@@ -55,39 +55,68 @@ public class Calculator {
      * Addition, Substraktion, Division, oder Multiplikation, welche zwei Operanden benötigen.
      * Beim ersten Drücken der Taste wird der Bildschirminhalt nicht verändert, sondern nur der
      * Rechner in den passenden Operationsmodus versetzt.
+     * (Erweiterung) Wenn bereits eine Operation ausgeführt wurde und eine Zahl auf dem Bildschirm angezeigt wird,
+     * wird die vorherige Operation sofort ausgewertet, bevor die neue Operation gesetzt wird.
      * Beim zweiten Drücken nach Eingabe einer weiteren Zahl wird direkt des aktuelle Zwischenergebnis
      * auf dem Bildschirm angezeigt. Falls hierbei eine Division durch Null auftritt, wird "Error" angezeigt.
      * @param operation "+" für Addition, "-" für Substraktion, "x" für Multiplikation, "/" für Division
      */
     public void pressBinaryOperationKey(String operation)  {
-        if(!latestOperation.isEmpty() && !screen.equals("0")){
+        if(!latestOperation.isEmpty() && !screen.equals("0")){      //Bug fix
             pressEqualsKey();
+
         }
+
         latestValue = Double.parseDouble(screen);
         latestOperation = operation;
     }
 
     /**
-     * Empfängt den Wert einer gedrückten unären Operationstaste, also eine der drei Operationen
-     * Quadratwurzel, Prozent, Inversion, welche nur einen Operanden benötigen.
-     * Beim Drücken der Taste wird direkt die Operation auf den aktuellen Zahlenwert angewendet und
-     * der Bildschirminhalt mit dem Ergebnis aktualisiert.
+     * Führt eine unäre Operation auf den aktuellen Bildschirmwert aus: Quadratwurzel, Prozent oder Inversion.
+     *
+     * - "√": Berechnet die Quadratwurzel des aktuellen Wertes.
+     * - "%": Berechnet den Prozentwert basierend auf dem Kontext:
+     *   - Ohne vorherige Operation: interpretiert den aktuellen Wert als Prozent (z.B., 10% = 0,1).
+     *   - Mit vorheriger Operation: berechnet den Prozentwert relativ zum vorherigen Wert (z.B., "50 + 10%" ergibt 55).
+     * - "1/x": Berechnet den Kehrwert des aktuellen Wertes.
+     *
+     * Aktualisiert den Bildschirm direkt mit dem Ergebnis.
+     *
      * @param operation "√" für Quadratwurzel, "%" für Prozent, "1/x" für Inversion
      */
-    public void pressUnaryOperationKey(String operation) {
-        latestValue = Double.parseDouble(screen);
-        latestOperation = operation;
-        var result = switch(operation) {
-            case "√" -> Math.sqrt(Double.parseDouble(screen));
-            case "%" -> Double.parseDouble(screen) / 100;
-            case "1/x" -> 1 / Double.parseDouble(screen);
-            default -> throw new IllegalArgumentException();
-        };
-        screen = Double.toString(result);
-        if(screen.equals("NaN")) screen = "Error";
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
 
+    public void pressUnaryOperationKey(String operation) {
+        double result;
+        double currentScreenValue = Double.parseDouble(screen); // Get the current screen value
+
+        switch (operation) {
+            case "√":
+                result = Math.sqrt(currentScreenValue);
+                break;
+            case "%":
+                // Check if there's a previous operation, calculate percentage accordingly
+                if (latestOperation.isEmpty()) {
+                    // No previous operation, so calculate percentage of current screen value
+                    result = currentScreenValue / 100;
+                } else {
+                    // Calculate percentage based on latestValue (for example, 50 + 10% as 50 + (50 * 10 / 100))
+                    result = latestValue * (currentScreenValue / 100);
+                }
+                break;
+            case "1/x":
+                result = 1 / currentScreenValue;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown operation: " + operation);
+        }
+
+        // Update the screen with the result
+        screen = Double.toString(result);
+        if (screen.equals("NaN") || screen.equals("Infinity")) screen = "Error"; // Handle error cases
+        if (screen.endsWith(".0")) screen = screen.substring(0, screen.length() - 2); // Remove unnecessary ".0"
+        if (screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10); // Limit to 10 characters if decimal
     }
+
 
     /**
      * Empfängt den Befehl der gedrückten Dezimaltrennzeichentaste, im Englischen üblicherweise "."
