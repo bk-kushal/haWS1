@@ -127,5 +127,26 @@ class CalculatorTest {
         assertEquals(expected, actual);
 
     }
+    //Teil aufgabe 2: Zweiter roter Test
+    @Test
+    void testPercent(){
+        Calculator calc = new Calculator();
+
+        calc.pressDigitKey(5);
+        calc.pressDigitKey(0);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(1);
+        calc.pressDigitKey(0);
+        calc.pressUnaryOperationKey("%");
+        calc.pressEqualsKey();
+
+        String expected = "55";
+        String actual = calc.readScreen();
+        assertEquals(expected, actual);
+
+
+
+    }
+
 }
 
